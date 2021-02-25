@@ -149,15 +149,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2e9e66b821c77d4abf8e5479e89b1b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prefubPlayer: {fileID: 8462566552981705872, guid: c4268b5e00a63dd469907dbfc9ce7ac2,
+    type: 3}
+  playerScale: {x: 2, y: 0.3, z: 0}
+  playerSpeed: 5
   prefab_Ball: {fileID: -2717963900945376749, guid: ee8686053bcd31a4690ed5d2d60b63b8,
     type: 3}
-  ballSpeed: 1
-  ballRadius: 0.3
+  ballSpeed: 7
+  ballRadius: 0.2
   ballDirection: {x: 0, y: 0}
   prefab_Background: {fileID: 4485695481754063305, guid: bd7be23df2a846749a1ee7f2e12dc1f6,
     type: 3}
   width: 6
   height: 6
+  countBricks: 3
+  prefab_Brick: {fileID: 2868559554533964576, guid: 9d4674988c564dd4889d33eeb427f86c,
+    type: 3}
+  brickScale: {x: 0.95, y: 0.2, z: 1}
 --- !u!4 &24256093
 Transform:
   m_ObjectHideFlags: 0
