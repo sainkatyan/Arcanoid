@@ -14,9 +14,6 @@ public class Ball : MonoBehaviour
         speed = ballSpeed;
         direction = ballDirection;
     }
-
-
-
     public void UpdatePosition(Vector2 wall, float deltaTime, List<IElement> elements)
     {
         var deltaPosition = direction * deltaTime * speed;
@@ -42,8 +39,7 @@ public class Ball : MonoBehaviour
         }
         if (transform.position.y <= -wall.y + radius)
         {
-            Debug.Log("GameOver");
-            Destroy(this.gameObject);
+            GameController.RemoveBall(this);
         }
 
         for (int i = 0; i < elements.Count; i++)
@@ -52,27 +48,51 @@ public class Ball : MonoBehaviour
             {
                 var position = elements[i].GetTransform().position;
                 var scale = elements[i].GetTransform().localScale;
-                if (CheckDown(position, scale) && CheckUp(position, scale))
-                {
-                    if (CheckRight(position, scale))
-                    {
-                        if (CheckLeft(position, scale))
-                        {
-                            direction.y *= -1f;
 
-                            if (transform.position.y >= position.y)
-                            {
-                                transform.position = new Vector3(transform.position.x, position.y + radius + scale.y * 0.5f,  transform.position.z);
-                            }
-                            else
-                            {
-                                transform.position = new Vector3(transform.position.x, position.y - radius - scale.y * 0.5f, transform.position.z);
-                            }
-                            elements[i].Collision();
-                            break;
+                //check collisions
+                if (CheckDown(position, scale) && CheckUp(position, scale) && CheckRight(position, scale) && CheckLeft(position, scale))
+                {
+                    //collisions by vertical sides: up and down
+                    if (Mathf.Abs(position.y - transform.position.y) > scale.y * 0.5f)
+                    {
+                        direction.y *= -1f;
+                        //up
+                        if (transform.position.y >= position.y)
+                        {
+                            transform.position = new Vector3(transform.position.x, position.y + radius + scale.y * 0.5f, transform.position.z);
+                        }
+                        //down
+                        else
+                        {
+                            transform.position = new Vector3(transform.position.x, position.y - radius - scale.y * 0.5f, transform.position.z);
+                        }
+                        //check player
+                        if (i == 0)
+                        {
+                            float partLerp = (transform.position.x - position.x + scale.x * 0.5f) / scale.x;
+                            float angle = Mathf.Lerp(GameController.MAXANGLE, GameController.MINANGLE, partLerp) * Mathf.Deg2Rad;
+                            direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                         }
                     }
+                    //collisions by horizontal sides: left and right
+                    else
+                    {
+                        direction.x *= -1f;
+                        //right
+                        if (transform.position.x >= position.x)
+                        {
+                            transform.position = new Vector3(position.x + radius + scale.x * 0.5f, transform.position.y, transform.position.z);
+                        }
+                        //left
+                        else
+                        {
+                            transform.position = new Vector3(position.x - radius - scale.x * 0.5f, transform.position.y, transform.position.z);
+                        }
+                    }
+                    elements[i].Collision();
+                    break;
                 }
+
             }
         }
     }

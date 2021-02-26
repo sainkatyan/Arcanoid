@@ -4,19 +4,20 @@ using UnityEngine;
 
 public class Brick : MonoBehaviour, IElement
 {
+    private int health = 1;
+    public void Init(Vector3 scale, Vector3 pos, int brickHealth)
+    {
+        transform.localScale = scale;
+        transform.position = pos;
+        health = brickHealth;
+    }
     public void Collision()
     {
-        Destroy(this.gameObject);
+        GameController.RemoveElement(this);
     }
 
     public Transform GetTransform()
     {
         return this.transform;
-    }
-
-    public void Init(Vector3 scale, Vector3 pos)
-    {
-        transform.localScale = scale;
-        transform.position = pos;
     }
 }

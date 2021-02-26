@@ -14,10 +14,12 @@ public class GameController : MonoBehaviour
 
     [Header("Ball")]
     public Ball prefab_Ball;
-    private Ball ball;
+    private List<Ball> balls;
     public float ballSpeed = 1f;
     public float ballRadius = 0.3f;
     public Vector2 ballDirection = Vector2.zero;
+    public static readonly float MINANGLE = 20f;
+    public static readonly float MAXANGLE = 160f;
 
     [Header("Background")]
     public Background prefab_Background;
@@ -31,12 +33,22 @@ public class GameController : MonoBehaviour
     public Brick prefab_Brick;
     private Brick[] bricks;
     public Vector3 brickScale = new Vector3(0.95f, 0.2f, 1f);
+    private int brickHealth = 1;
 
     private List<IElement> elements;
 
-    void Start()
+    private static GameController instance;
+
+    public static GameController Instance { get => instance; }
+
+    private void Awake()
+    {
+        instance = this;
+    }
+    private void Start()
     {
         elements = new List<IElement>();
+        balls = new List<Ball>();
 
         background = Instantiate(prefab_Background, new Vector3(0f, 0f, 100f), Quaternion.identity);
         background.Init(new Vector3(width, height, 1f));
@@ -52,22 +64,58 @@ public class GameController : MonoBehaviour
         for (int i = 0; i < countBricks; i++)
         {
             bricks[i] = Instantiate(prefab_Brick, Vector3.zero, Quaternion.identity);
-            bricks[i].Init(brickScale, new Vector3(i, 2f, 1f));
+            bricks[i].Init(brickScale, new Vector3(i, 2f, 1f), brickHealth);
             elements.Add(bricks[i]);
         }
 
         float ballStartPosY = playerStartPos.y + playerScale.y * 0.5f + ballRadius + 1f;
-        ball = Instantiate(prefab_Ball, new Vector3(playerStartPos.x, ballStartPosY, playerStartPos.z), Quaternion.identity);
-        float randomAngle = Random.Range(20f, 160f) * Mathf.Deg2Rad;
+        var tempBall = Instantiate(prefab_Ball, new Vector3(playerStartPos.x, ballStartPosY, playerStartPos.z), Quaternion.identity);
+        float randomAngle = Random.Range(MINANGLE, MAXANGLE) * Mathf.Deg2Rad;
         ballDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
-        ball.Init(ballRadius, ballSpeed, ballDirection);
-
+        tempBall.Init(ballRadius, ballSpeed, ballDirection);
+        balls.Add(tempBall);
     }
 
-
-    void Update()
+    private void Update()
     {
         player.UpdatePosition(wall, Time.deltaTime, Input.GetAxis("Horizontal"));
-        ball.UpdatePosition(wall, Time.deltaTime, elements);
+        if (balls.Count > 0)
+        {
+            for (int i = 0; i < balls.Count; i++)
+            {
+                balls[i].UpdatePosition(wall, Time.deltaTime, elements);
+            }
+        }
+        else
+        {
+            Debug.Log("GameOver");
+        }
+    }
+
+    public static void RemoveElement(IElement element)
+    {
+        bool result =  instance.elements.Remove(element);
+        if (result == true)
+        {
+            Debug.Log("Element is removed from element list");
+            Destroy(element.GetTransform().gameObject);
+        }
+        else
+        {
+            Debug.LogError("Element doesn't exist");
+        }
+    }
+    public static void RemoveBall(Ball ball)
+    {
+        bool result = instance.balls.Remove(ball);
+        if (result == true)
+        {
+            Debug.Log("Ball is removed from element list");
+            Destroy(ball.gameObject);
+        }
+        else
+        {
+            Debug.LogError("Ball doesn't exist");
+        }
     }
 }
