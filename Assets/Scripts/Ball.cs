@@ -7,6 +7,11 @@ public class Ball : MonoBehaviour
     private Vector2 direction = Vector2.zero;
     private float speed = 1f;
     private float radius = 1f;
+
+    public Vector2 Direction { get => direction;}
+    public float Speed { get => speed;}
+    public float Radius { get => radius;}
+
     public void Init(float radiusBall, float ballSpeed, Vector2 ballDirection)
     {
         radius = radiusBall;
@@ -111,5 +116,11 @@ public class Ball : MonoBehaviour
     private bool CheckLeft(Vector3 pos, Vector3 scale)
     {
         return transform.position.x + radius >= pos.x - scale.x * 0.5f;
+    }
+
+    public void ChangeSpeed(float _deltaSpeed)
+    {
+        speed += _deltaSpeed;
+        Debug.Log("speed: " + speed);
     }
 }

@@ -24,9 +24,9 @@ public class GameController : MonoBehaviour
     [Header("Background")]
     public Background prefab_Background;
     private Background background;
+    private Vector2 wall = Vector2.zero;
     public float width = 4f;
     public float height = 4f;
-    private Vector2 wall = Vector2.zero;
 
     [Header("Bricks")]
     public int countBricks = 3;
@@ -34,6 +34,12 @@ public class GameController : MonoBehaviour
     private Brick[] bricks;
     public Vector3 brickScale = new Vector3(0.95f, 0.2f, 1f);
     private int brickHealth = 1;
+
+    [Header("Bonus")]
+    public Bonus prefub_Bonus;
+    public float bonusSpeed;
+    private List<Bonus> bonuses;
+    public float bonusTime = 3f;
 
     private List<IElement> elements;
 
@@ -49,6 +55,7 @@ public class GameController : MonoBehaviour
     {
         elements = new List<IElement>();
         balls = new List<Ball>();
+        bonuses = new List<Bonus>();
 
         background = Instantiate(prefab_Background, new Vector3(0f, 0f, 100f), Quaternion.identity);
         background.Init(new Vector3(width, height, 1f));
@@ -64,21 +71,22 @@ public class GameController : MonoBehaviour
         for (int i = 0; i < countBricks; i++)
         {
             bricks[i] = Instantiate(prefab_Brick, Vector3.zero, Quaternion.identity);
-            bricks[i].Init(brickScale, new Vector3(i, 2f, 1f), brickHealth);
+            bricks[i].Init(brickScale, new Vector3(i, 2f, 1f), brickHealth, TypeBonus.PlusPlayerScale);
             elements.Add(bricks[i]);
         }
 
-        float ballStartPosY = playerStartPos.y + playerScale.y * 0.5f + ballRadius + 1f;
-        var tempBall = Instantiate(prefab_Ball, new Vector3(playerStartPos.x, ballStartPosY, playerStartPos.z), Quaternion.identity);
-        float randomAngle = Random.Range(MINANGLE, MAXANGLE) * Mathf.Deg2Rad;
-        ballDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
-        tempBall.Init(ballRadius, ballSpeed, ballDirection);
-        balls.Add(tempBall);
+        InitBall();
+
+        //init bonuses
+        //for (int i = 0; i < countBricks; i++)
+        //{
+        //    InitBonus(brickScale, bricks[i].GetTransform().position, bonusSpeed);
+        //}
     }
 
     private void Update()
     {
-        player.UpdatePosition(wall, Time.deltaTime, Input.GetAxis("Horizontal"));
+        player.UpdatePosition(wall, Time.deltaTime, Input.GetAxis("Horizontal"), bonuses);
         if (balls.Count > 0)
         {
             for (int i = 0; i < balls.Count; i++)
@@ -90,6 +98,22 @@ public class GameController : MonoBehaviour
         {
             Debug.Log("GameOver");
         }
+        if (bonuses.Count > 0)
+        {
+            for (int i = 0; i < bonuses.Count; i++)
+            {
+                bonuses[i].UpdatePosition(wall, Time.deltaTime);
+            }
+        }
+    }
+    private void InitBall()
+    {
+        float ballStartPosY = playerStartPos.y + playerScale.y * 0.5f + ballRadius + 0.5f;
+        var tempBall = Instantiate(prefab_Ball, new Vector3(playerStartPos.x, ballStartPosY, playerStartPos.z), Quaternion.identity);
+        float randomAngle = Random.Range(MINANGLE, MAXANGLE) * Mathf.Deg2Rad;
+        ballDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
+        tempBall.Init(ballRadius, ballSpeed, ballDirection);
+        balls.Add(tempBall);
     }
 
     public static void RemoveElement(IElement element)
@@ -117,5 +141,95 @@ public class GameController : MonoBehaviour
         {
             Debug.LogError("Ball doesn't exist");
         }
+    }
+
+    public static void InitBonus(Brick _brick)
+    {
+        var bonus = Instantiate(instance.prefub_Bonus, Vector3.zero, Quaternion.identity);
+        bonus.Init(_brick.Scale, _brick.Position, instance.bonusSpeed, _brick.TypeBonus);
+        instance.bonuses.Add(bonus);
+    }
+
+    public static void RemoveBonus(Bonus bonus)
+    {
+        bool result = instance.bonuses.Remove(bonus);
+        if (result == true)
+        {
+            Debug.Log("Bonus is removed from element list");
+            Destroy(bonus.gameObject);
+        }
+        else
+        {
+            Debug.LogError("Bonus doesn't exist");
+        }
+    }
+    public static void ActivateBonus(TypeBonus _typeBonus)
+    {
+        Debug.Log(_typeBonus);
+
+        switch (_typeBonus)
+        {
+            case TypeBonus.None:
+                break;
+            case TypeBonus.PlusBallSpeed:
+                instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * 0.5f));
+                break;
+            case TypeBonus.MinusBallSpeed:
+                instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * 0.5f));
+                break;
+            case TypeBonus.AddBall:
+                instance.AddBall();
+                break;
+            case TypeBonus.PlusPlayerScale:
+                instance.StartCoroutine(instance.ChangePlayerScale(instance.player.Scale.x * 0.3f));
+                break;
+            default:
+                break;
+        }
+    }
+
+    private IEnumerator ChangeBallSpeed(float _deltaSpeed)
+    {
+        for (int i = 0; i < balls.Count; i++)
+        {
+            balls[i].ChangeSpeed(_deltaSpeed);
+        }
+        Debug.Log("change speed on " + _deltaSpeed);
+        yield return new WaitForSeconds(bonusTime);
+
+        for (int i = 0; i < balls.Count; i++)
+        {
+            balls[i].ChangeSpeed(-_deltaSpeed);
+        }
+    }
+    private void AddBall()
+    {
+        List<Ball> oldBalls = new List<Ball>();
+        oldBalls.AddRange(balls);
+        balls.Clear();
+        for (int i = 0; i < oldBalls.Count; i++)
+        {
+            float deltaAngle = 45f;
+            for (int j = 0; j < 2; j ++)
+            {
+                var tempBall = Instantiate(prefab_Ball, oldBalls[i].transform.position, Quaternion.identity);
+                float angle = Mathf.Atan2(oldBalls[i].Direction.y, oldBalls[i].Direction.x) + (deltaAngle * Mathf.Deg2Rad);
+                var direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                tempBall.Init(oldBalls[i].Radius, oldBalls[i].Speed, direction);
+                balls.Add(tempBall);
+
+                deltaAngle = 90f;
+            }
+        }
+        for (int i = 0; i < oldBalls.Count; i++)
+        {
+            Destroy(oldBalls[i].gameObject);
+        }
+    }
+    private IEnumerator ChangePlayerScale(float _deltaScale)
+    {
+        player.ChangeScale(_deltaScale);
+        yield return new WaitForSeconds(bonusTime);
+        player.ChangeScale(-_deltaScale);
     }
 }

@@ -161,11 +161,14 @@ MonoBehaviour:
   prefab_Background: {fileID: 4485695481754063305, guid: bd7be23df2a846749a1ee7f2e12dc1f6,
     type: 3}
   width: 6
-  height: 6
+  height: 8
   countBricks: 3
   prefab_Brick: {fileID: 2868559554533964576, guid: 9d4674988c564dd4889d33eeb427f86c,
     type: 3}
   brickScale: {x: 1, y: 1, z: 1}
+  prefub_Bonus: {fileID: -3099336331691175770, guid: bc774cda8d5de474b812590b322eb2ef,
+    type: 3}
+  bonusSpeed: 1
 --- !u!4 &24256093
 Transform:
   m_ObjectHideFlags: 0
