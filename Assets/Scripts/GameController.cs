@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
+    public LevelScriptableObject level;
+
+
     [Header("Player")]
     public Player prefubPlayer;
     private Player player;
@@ -25,15 +28,13 @@ public class GameController : MonoBehaviour
     public Background prefab_Background;
     private Background background;
     private Vector2 wall = Vector2.zero;
-    public float width = 4f;
-    public float height = 4f;
+    //public float width = 4f;
+    //public float height = 4f;
 
     [Header("Bricks")]
-    public int countBricks = 3;
-    public Brick prefab_Brick;
+    public BrickScriptableObject[] brickPreset;
     private Brick[] bricks;
-    public Vector3 brickScale = new Vector3(0.95f, 0.2f, 1f);
-    private int brickHealth = 1;
+    //public int countBricks = 3;
 
     [Header("Bonus")]
     public Bonus prefub_Bonus;
@@ -58,20 +59,22 @@ public class GameController : MonoBehaviour
         bonuses = new List<Bonus>();
 
         background = Instantiate(prefab_Background, new Vector3(0f, 0f, 100f), Quaternion.identity);
-        background.Init(new Vector3(width, height, 1f));
-        wall.x = width / 2f;
-        wall.y = height / 2f;
+        background.Init(new Vector3(level.width, level.height, 1f));
+        wall.x = level.width / 2f;
+        wall.y = level.height / 2f;
 
-        playerStartPos = new Vector3(0f, -height / 2f + playerScale.y + playerOffsetY);
+        playerStartPos = new Vector3(0f, -level.height / 2f + playerScale.y + playerOffsetY);
         player = Instantiate(prefubPlayer, Vector3.zero, Quaternion.identity);
         player.Init(playerScale, playerStartPos, playerSpeed);
         elements.Add(player);
 
-        bricks = new Brick[countBricks];
-        for (int i = 0; i < countBricks; i++)
+        bricks = new Brick[level.brickInfo.Length];
+        for (int i = 0; i < level.brickInfo.Length; i++)
         {
-            bricks[i] = Instantiate(prefab_Brick, Vector3.zero, Quaternion.identity);
-            bricks[i].Init(brickScale, new Vector3(i, 2f, 1f), brickHealth, TypeBonus.PlusPlayerScale);
+            var dad = GetBrick(level.brickInfo[i].typeBrick);
+            bricks[i] = Instantiate(dad.prefab_Brick);
+
+            bricks[i].Init(dad.brickScale, level.brickInfo[i].position, dad.brickHealth, dad.typeBrick);
             elements.Add(bricks[i]);
         }
 
@@ -106,10 +109,26 @@ public class GameController : MonoBehaviour
             }
         }
     }
+
+    private BrickScriptableObject GetBrick(TypeBrick typeWant)
+    {
+        for (int i = 0; i < brickPreset.Length; i++)
+        {
+            var typeDad = brickPreset[i].typeBrick;
+            if (brickPreset[i].typeBrick == typeWant)
+            {
+                return brickPreset[i];
+            }
+        }
+        return null;
+
+    }
     private void InitBall()
     {
         float ballStartPosY = playerStartPos.y + playerScale.y * 0.5f + ballRadius + 0.5f;
+
         var tempBall = Instantiate(prefab_Ball, new Vector3(playerStartPos.x, ballStartPosY, playerStartPos.z), Quaternion.identity);
+
         float randomAngle = Random.Range(MINANGLE, MAXANGLE) * Mathf.Deg2Rad;
         ballDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
         tempBall.Init(ballRadius, ballSpeed, ballDirection);
@@ -163,24 +182,24 @@ public class GameController : MonoBehaviour
             Debug.LogError("Bonus doesn't exist");
         }
     }
-    public static void ActivateBonus(TypeBonus _typeBonus)
+    public static void ActivateBonus(TypeBrick _typeBonus)
     {
         Debug.Log(_typeBonus);
 
         switch (_typeBonus)
         {
-            case TypeBonus.None:
+            case TypeBrick.None:
                 break;
-            case TypeBonus.PlusBallSpeed:
+            case TypeBrick.PlusBallSpeed:
                 instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * 0.5f));
                 break;
-            case TypeBonus.MinusBallSpeed:
+            case TypeBrick.MinusBallSpeed:
                 instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * 0.5f));
                 break;
-            case TypeBonus.AddBall:
+            case TypeBrick.AddBall:
                 instance.AddBall();
                 break;
-            case TypeBonus.PlusPlayerScale:
+            case TypeBrick.PlusPlayerScale:
                 instance.StartCoroutine(instance.ChangePlayerScale(instance.player.Scale.x * 0.3f));
                 break;
             default:

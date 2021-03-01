@@ -9,7 +9,7 @@ public class Bonus : MonoBehaviour
     private Vector3 scale = Vector3.one;
     private Vector3 position = Vector3.one;
 
-    private TypeBonus typeBonus = TypeBonus.None;
+    private TypeBrick typeBonus = TypeBrick.None;
 
     public void Collision()
     {
@@ -18,7 +18,7 @@ public class Bonus : MonoBehaviour
         GameController.RemoveBonus(this);
     }
 
-    public void Init(Vector3 _scale, Vector3 _pos, float _speed, TypeBonus _typeBonus)
+    public void Init(Vector3 _scale, Vector3 _pos, float _speed, TypeBrick _typeBonus)
     {
         speed = _speed;
         scale = _scale;

@@ -149,26 +149,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2e9e66b821c77d4abf8e5479e89b1b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  level: {fileID: 11400000, guid: b1cf7787e2a4df444843f041dfdb3045, type: 2}
   prefubPlayer: {fileID: 8462566552981705872, guid: c4268b5e00a63dd469907dbfc9ce7ac2,
     type: 3}
-  playerScale: {x: 2, y: 0.3, z: 0}
+  playerScale: {x: 1, y: 0.3, z: 0}
   playerSpeed: 10
   prefab_Ball: {fileID: -2717963900945376749, guid: ee8686053bcd31a4690ed5d2d60b63b8,
     type: 3}
   ballSpeed: 5
-  ballRadius: 0.2
+  ballRadius: 0.1
   ballDirection: {x: 0, y: 0}
   prefab_Background: {fileID: 4485695481754063305, guid: bd7be23df2a846749a1ee7f2e12dc1f6,
     type: 3}
-  width: 6
-  height: 8
-  countBricks: 3
-  prefab_Brick: {fileID: 2868559554533964576, guid: 9d4674988c564dd4889d33eeb427f86c,
-    type: 3}
-  brickScale: {x: 1, y: 1, z: 1}
+  brickPreset:
+  - {fileID: 11400000, guid: 936b477246b471c4eb694232c7e04e0d, type: 2}
+  - {fileID: 11400000, guid: 19e7caf0534dcc047b7a1ab6ff167c05, type: 2}
+  - {fileID: 11400000, guid: b1a6c4eeb687fc6458f6046aaaf0658a, type: 2}
+  - {fileID: 11400000, guid: eded079a7b2700949a0ab34cf4b33a0e, type: 2}
+  - {fileID: 11400000, guid: 1132a7152e1cb4846920f74170eaa078, type: 2}
   prefub_Bonus: {fileID: -3099336331691175770, guid: bc774cda8d5de474b812590b322eb2ef,
     type: 3}
   bonusSpeed: 1
+  bonusTime: 3
 --- !u!4 &24256093
 Transform:
   m_ObjectHideFlags: 0
@@ -219,7 +221,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_BackGroundColor: {r: 0.23317908, g: 0.33347782, b: 0.3773585, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -236,7 +238,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 2.61
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
