@@ -17,4 +17,4 @@ MonoBehaviour:
   brickScale: {x: 1, y: 0.3, z: 1}
   brickHealth: 1
   brickColor: {r: 0.9215687, g: 0.8000001, b: 0.8313726, a: 1}
-  typeBrick: 0
+  typeBrick: 2

@@ -17,11 +17,21 @@ MonoBehaviour:
   brickInfo:
   - typeBrick: 0
     position: {x: -2, y: 2, z: 0}
+    health: 1
+    color: {r: 0.36862746, g: 0.3921569, b: 0.3921569, a: 1}
   - typeBrick: 0
     position: {x: -1, y: 2, z: 0}
+    health: 1
+    color: {r: 0.8000001, g: 0.53333336, b: 0.24313727, a: 1}
   - typeBrick: 0
     position: {x: 0, y: 2, z: 0}
+    health: 1
+    color: {r: 0.9568628, g: 0.7843138, b: 0.54901963, a: 1}
   - typeBrick: 0
     position: {x: 1, y: 2, z: 0}
+    health: 1
+    color: {r: 0.64705884, g: 0.77647066, b: 0.69411767, a: 1}
   - typeBrick: 0
     position: {x: 2, y: 2, z: 0}
+    health: 1
+    color: {r: 0.8235295, g: 0.6862745, b: 0.68235296, a: 1}

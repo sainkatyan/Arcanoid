@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    public LevelScriptableObject level;
-
+    [Header("Levels")]
+    public List<LevelScriptableObject> levels;
+    private int levelIndex = 0;
+    private bool pause = false;
+    private float levelTime = 1f;
 
     [Header("Player")]
     public Player prefubPlayer;
@@ -28,19 +31,21 @@ public class GameController : MonoBehaviour
     public Background prefab_Background;
     private Background background;
     private Vector2 wall = Vector2.zero;
-    //public float width = 4f;
-    //public float height = 4f;
 
     [Header("Bricks")]
     public BrickScriptableObject[] brickPreset;
     private Brick[] bricks;
-    //public int countBricks = 3;
 
     [Header("Bonus")]
     public Bonus prefub_Bonus;
     public float bonusSpeed;
-    private List<Bonus> bonuses;
     public float bonusTime = 3f;
+    private static float deltaBallSpeed = 0.5f;
+    private static float deltaPlayerScale = 0.3f;
+    private List<Bonus> bonuses;
+
+    [Header("UIController")]
+    public UIController uIController;
 
     private List<IElement> elements;
 
@@ -52,43 +57,45 @@ public class GameController : MonoBehaviour
     {
         instance = this;
     }
+
     private void Start()
+    {
+        Init(levelIndex);
+        uIController.UpdateText("Level " + levelIndex, levelTime);
+    }
+
+    private void Init(int levelIndex)
     {
         elements = new List<IElement>();
         balls = new List<Ball>();
         bonuses = new List<Bonus>();
 
         background = Instantiate(prefab_Background, new Vector3(0f, 0f, 100f), Quaternion.identity);
-        background.Init(new Vector3(level.width, level.height, 1f));
-        wall.x = level.width / 2f;
-        wall.y = level.height / 2f;
+        background.Init(new Vector3(levels[levelIndex].width, levels[levelIndex].height, 1f));
+        wall.x = levels[levelIndex].width / 2f;
+        wall.y = levels[levelIndex].height / 2f;
 
-        playerStartPos = new Vector3(0f, -level.height / 2f + playerScale.y + playerOffsetY);
+        playerStartPos = new Vector3(0f, -levels[levelIndex].height / 2f + playerScale.y + playerOffsetY);
         player = Instantiate(prefubPlayer, Vector3.zero, Quaternion.identity);
         player.Init(playerScale, playerStartPos, playerSpeed);
         elements.Add(player);
 
-        bricks = new Brick[level.brickInfo.Length];
-        for (int i = 0; i < level.brickInfo.Length; i++)
+        bricks = new Brick[levels[levelIndex].brickInfo.Length];
+        for (int i = 0; i < levels[levelIndex].brickInfo.Length; i++)
         {
-            var dad = GetBrick(level.brickInfo[i].typeBrick);
+            var dad = GetBrick(levels[levelIndex].brickInfo[i].typeBrick);
             bricks[i] = Instantiate(dad.prefab_Brick);
-
-            bricks[i].Init(dad.brickScale, level.brickInfo[i].position, dad.brickHealth, dad.typeBrick);
+            bricks[i].Init(dad.brickScale, levels[levelIndex].brickInfo[i].position, levels[levelIndex].brickInfo[i].health, levels[levelIndex].brickInfo[i].color, levels[levelIndex].brickInfo[i].typeBrick);
             elements.Add(bricks[i]);
         }
 
         InitBall();
-
-        //init bonuses
-        //for (int i = 0; i < countBricks; i++)
-        //{
-        //    InitBonus(brickScale, bricks[i].GetTransform().position, bonusSpeed);
-        //}
+        pause = false;
     }
 
     private void Update()
     {
+        if (pause) return;
         player.UpdatePosition(wall, Time.deltaTime, Input.GetAxis("Horizontal"), bonuses);
         if (balls.Count > 0)
         {
@@ -125,7 +132,7 @@ public class GameController : MonoBehaviour
     }
     private void InitBall()
     {
-        float ballStartPosY = playerStartPos.y + playerScale.y * 0.5f + ballRadius + 0.5f;
+        float ballStartPosY = playerStartPos.y + playerScale.y * 0.5f + ballRadius + 1f;
 
         var tempBall = Instantiate(prefab_Ball, new Vector3(playerStartPos.x, ballStartPosY, playerStartPos.z), Quaternion.identity);
 
@@ -142,6 +149,10 @@ public class GameController : MonoBehaviour
         {
             Debug.Log("Element is removed from element list");
             Destroy(element.GetTransform().gameObject);
+            if (instance.elements.Count < 2)
+            {
+                instance.Win();
+            }
         }
         else
         {
@@ -155,6 +166,10 @@ public class GameController : MonoBehaviour
         {
             Debug.Log("Ball is removed from element list");
             Destroy(ball.gameObject);
+            if (instance.balls.Count < 1)
+            {
+                instance.Lose();
+            }
         }
         else
         {
@@ -184,23 +199,22 @@ public class GameController : MonoBehaviour
     }
     public static void ActivateBonus(TypeBrick _typeBonus)
     {
-        Debug.Log(_typeBonus);
-
+        instance.uIController.UpdateText("Bonus: " + _typeBonus.ToString() + "!", 2);
         switch (_typeBonus)
         {
             case TypeBrick.None:
                 break;
             case TypeBrick.PlusBallSpeed:
-                instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * 0.5f));
+                instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * deltaBallSpeed));
                 break;
             case TypeBrick.MinusBallSpeed:
-                instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * 0.5f));
+                instance.StartCoroutine(instance.ChangeBallSpeed(instance.ballSpeed * -deltaBallSpeed));
                 break;
             case TypeBrick.AddBall:
                 instance.AddBall();
                 break;
             case TypeBrick.PlusPlayerScale:
-                instance.StartCoroutine(instance.ChangePlayerScale(instance.player.Scale.x * 0.3f));
+                instance.StartCoroutine(instance.ChangePlayerScale(instance.player.Scale.x * deltaPlayerScale));
                 break;
             default:
                 break;
@@ -251,4 +265,73 @@ public class GameController : MonoBehaviour
         yield return new WaitForSeconds(bonusTime);
         player.ChangeScale(-_deltaScale);
     }
+
+    private void Lose()
+    {
+        Restart();
+    }
+    private void Win()
+    {
+        levelIndex++;
+        if (levelIndex > levels.Count - 1)
+        {
+            pause = true;
+            return;
+        }
+        Restart();
+    }
+
+    Coroutine coroutine;
+    private void Restart()
+    {
+        pause = true;
+        Destroy(background.gameObject);
+
+        if (player != null)
+        {
+            Destroy(player.gameObject);
+        }
+
+        if (balls.Count > 0)
+        {
+            for (int i = 0; i < balls.Count; i++)
+            {
+                Destroy(balls[i].gameObject);
+            }
+        }
+
+        if (bricks.Length > 0)
+        {
+            for (int i = 0; i < bricks.Length; i++)
+            {
+                if (bricks[i] != null)
+                {
+                    Destroy(bricks[i].gameObject);
+                }
+            }
+            bricks = null;
+        }
+
+        if (bonuses.Count > 0)
+        {
+            for (int i = 0; i < bonuses.Count; i++)
+            {
+                Destroy(bonuses[i].gameObject);
+            }
+        }
+
+        elements.Clear();
+        balls.Clear();
+        bonuses.Clear();
+
+        StartCoroutine(InitCoroutine());
+    }
+
+    private IEnumerator InitCoroutine()
+    {
+        uIController.UpdateText("Level " + levelIndex, levelTime);
+        yield return new WaitForSeconds(levelTime);
+        Init(levelIndex);
+    }
+
 }

@@ -8,7 +8,6 @@ public class Bonus : MonoBehaviour
     private float speed = 0.5f;
     private Vector3 scale = Vector3.one;
     private Vector3 position = Vector3.one;
-
     private TypeBrick typeBonus = TypeBrick.None;
 
     public void Collision()

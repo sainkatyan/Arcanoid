@@ -42,7 +42,7 @@ public class Ball : MonoBehaviour
             direction.y *= -1f;
             transform.position = new Vector3(transform.position.x, wall.y - radius, transform.position.z);
         }
-        if (transform.position.y <= -wall.y + radius)
+        if (transform.position.y <= -wall.y + 2f * radius)
         {
             GameController.RemoveBall(this);
         }
@@ -121,6 +121,5 @@ public class Ball : MonoBehaviour
     public void ChangeSpeed(float _deltaSpeed)
     {
         speed += _deltaSpeed;
-        Debug.Log("speed: " + speed);
     }
 }

@@ -7,6 +7,8 @@ public class BrickInfo
 {
     public TypeBrick typeBrick = TypeBrick.None;
     public Vector3 position = Vector3.zero;
+    public int health = 1;
+    public Color color = Color.white;
 }
 
 [CreateAssetMenu(fileName = "Level", menuName = "ScriptableObjects/Level", order = 1)]
